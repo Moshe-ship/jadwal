@@ -12,6 +12,7 @@ from typing import Any, Callable
 from .data import (
     ARABIC_SENTENCES,
     ARABIC_TO_LATIN,
+    BLOOD_TYPES,
     CITIES_EGYPT,
     CITIES_GULF,
     CITIES_LEVANT,
@@ -19,6 +20,10 @@ from .data import (
     COMPANY_CORES,
     COMPANY_PREFIXES,
     COMPANY_SUFFIXES,
+    DIALECT_SENTENCES_EGYPT,
+    DIALECT_SENTENCES_GULF,
+    DIALECT_SENTENCES_LEVANT,
+    DIALECT_SENTENCES_MAGHREB,
     EG_GOVERNORATE_CODES,
     EMAIL_DOMAINS_GLOBAL,
     EMAIL_DOMAINS_LOCAL,
@@ -32,22 +37,32 @@ from .data import (
     FEMALE_NAMES_MAGHREB,
     GREGORIAN_MONTHS,
     HIJRI_MONTHS,
+    IBAN_FORMATS,
     JOB_TITLES,
     MALE_NAMES_EGYPT,
     MALE_NAMES_GULF,
     MALE_NAMES_LEVANT,
     MALE_NAMES_MAGHREB,
+    MARITAL_STATUS,
+    MARITAL_STATUS_F,
     NEIGHBORHOODS_EGYPT,
     NEIGHBORHOODS_GULF,
     NEIGHBORHOODS_LEVANT,
     NEIGHBORHOODS_MAGHREB,
     PHONE_FORMATS,
+    PLATE_FORMATS,
+    PLATE_LETTERS_SA,
     REGION_COUNTRIES,
     REGIONS,
+    SALARY_RANGES,
     STREETS_EGYPT,
     STREETS_GULF,
     STREETS_LEVANT,
     STREETS_MAGHREB,
+    UNIVERSITIES_EGYPT,
+    UNIVERSITIES_GULF,
+    UNIVERSITIES_LEVANT,
+    UNIVERSITIES_MAGHREB,
 )
 
 # ---------------------------------------------------------------------------
@@ -109,6 +124,20 @@ _NEIGHBORHOODS: dict[str, list[str]] = {
     "egypt": NEIGHBORHOODS_EGYPT,
     "levant": NEIGHBORHOODS_LEVANT,
     "maghreb": NEIGHBORHOODS_MAGHREB,
+}
+
+_UNIVERSITIES: dict[str, list[str]] = {
+    "gulf": UNIVERSITIES_GULF,
+    "egypt": UNIVERSITIES_EGYPT,
+    "levant": UNIVERSITIES_LEVANT,
+    "maghreb": UNIVERSITIES_MAGHREB,
+}
+
+_DIALECT_SENTENCES: dict[str, list[str]] = {
+    "gulf": DIALECT_SENTENCES_GULF,
+    "egypt": DIALECT_SENTENCES_EGYPT,
+    "levant": DIALECT_SENTENCES_LEVANT,
+    "maghreb": DIALECT_SENTENCES_MAGHREB,
 }
 
 
@@ -346,6 +375,141 @@ def gen_gender() -> str:
     return random.choice(["ذكر", "أنثى"])
 
 
+def gen_iban(region: str | None = None) -> str:
+    """Return a realistic IBAN for a country in *region*."""
+    region = _resolve_region(region)
+    country = random.choice(REGION_COUNTRIES[region])
+
+    if country not in IBAN_FORMATS:
+        # Fallback to first available country in region that has IBAN.
+        for cc in REGION_COUNTRIES[region]:
+            if cc in IBAN_FORMATS:
+                country = cc
+                break
+        else:
+            # Ultimate fallback to Saudi.
+            country = "SA"
+
+    code, total_len, bank_hint = IBAN_FORMATS[country]
+    check = f"{random.randint(2, 98):02d}"
+    remaining = total_len - len(code) - 2  # minus country code and check digits
+    if bank_hint:
+        body = bank_hint + _rand_digits(remaining - len(bank_hint))
+    else:
+        body = _rand_digits(remaining)
+    return f"{code}{check}{body}"
+
+
+def gen_iqama() -> str:
+    """Return a Saudi residency number (Iqama): starts with 2 + 9 digits."""
+    return f"2{_rand_digits(9)}"
+
+
+def gen_emirates_id() -> str:
+    """Return a synthetic UAE Emirates ID: 784-YYYY-XXXXXXX-X."""
+    year = random.randint(1960, 2005)
+    seq = _rand_digits(7)
+    check = _rand_digits(1)
+    return f"784-{year}-{seq}-{check}"
+
+
+def gen_passport(region: str | None = None) -> str:
+    """Return a synthetic passport number for a country in *region*."""
+    region = _resolve_region(region)
+
+    if region == "gulf":
+        # Saudi passport: letter + 8 digits.
+        letter = random.choice("ABCDEFGHJKLMNPRSTUVWXYZ")
+        return f"{letter}{_rand_digits(8)}"
+
+    if region == "egypt":
+        # Egyptian passport: A + 8 digits.
+        return f"A{_rand_digits(8)}"
+
+    if region == "levant":
+        # Jordanian passport: P + 7 digits.
+        return f"P{_rand_digits(7)}"
+
+    # Maghreb — Moroccan passport: 2 letters + 7 digits.
+    letters = "".join(random.choices("ABCDEFGHJKLMNPRSTUVWXYZ", k=2))
+    return f"{letters}{_rand_digits(7)}"
+
+
+def gen_license_plate(region: str | None = None) -> str:
+    """Return a synthetic license plate for a country in *region*."""
+    region = _resolve_region(region)
+
+    # Map region to plate format country code.
+    plate_country_map = {
+        "gulf": "SA",
+        "egypt": "EG",
+        "levant": "JO",
+        "maghreb": "EG",  # Reuse Egyptian format for Maghreb.
+    }
+    country = plate_country_map.get(region, "SA")
+
+    if country == "AE":
+        fmt = PLATE_FORMATS["AE"]
+    else:
+        fmt = PLATE_FORMATS.get(country, PLATE_FORMATS["SA"])
+
+    # Gulf region sometimes uses AE format.
+    if region == "gulf" and random.random() < 0.3:
+        fmt = PLATE_FORMATS["AE"]
+
+    result: list[str] = []
+    for ch in fmt:
+        if ch == "{":
+            continue
+        if ch == "}":
+            continue
+        result.append(ch)
+
+    # Rebuild using proper replacement.
+    plate = fmt
+    while "{L}" in plate:
+        plate = plate.replace("{L}", random.choice(PLATE_LETTERS_SA), 1)
+    while "{D}" in plate:
+        plate = plate.replace("{D}", str(random.randint(0, 9)), 1)
+
+    return plate
+
+
+def gen_university(region: str | None = None) -> str:
+    """Return a random university name for *region*."""
+    region = _resolve_region(region)
+    return random.choice(_UNIVERSITIES[region])
+
+
+def gen_salary(region: str | None = None) -> str:
+    """Return a formatted salary string like '15,000 ريال'."""
+    region = _resolve_region(region)
+    lo, hi, currency = SALARY_RANGES[region]
+    # Round to nearest 500.
+    amount = random.randint(lo, hi)
+    amount = round(amount / 500) * 500
+    return f"{amount:,} {currency}"
+
+
+def gen_blood_type() -> str:
+    """Return a random blood type."""
+    return random.choice(BLOOD_TYPES)
+
+
+def gen_marital_status() -> str:
+    """Return a random marital status in Arabic (gender-aware)."""
+    gender = random.choice(["male", "female"])
+    if gender == "male":
+        return random.choice(MARITAL_STATUS)
+    return random.choice(MARITAL_STATUS_F)
+
+
+def gen_dialect_sentence(region: str | None = None) -> str:
+    """Return a sentence in the regional Arabic dialect."""
+    region = _resolve_region(region)
+    return random.choice(_DIALECT_SENTENCES[region])
+
+
 # ---------------------------------------------------------------------------
 # Field registry
 # ---------------------------------------------------------------------------
@@ -370,6 +534,16 @@ FIELD_GENERATORS: dict[str, Callable[[str], Any]] = {
     "sentence": gen_sentence,
     "age": lambda _r: gen_age(),
     "gender": lambda _r: gen_gender(),
+    "iban": gen_iban,
+    "iqama": lambda _r: gen_iqama(),
+    "emirates_id": lambda _r: gen_emirates_id(),
+    "passport": gen_passport,
+    "license_plate": gen_license_plate,
+    "university": gen_university,
+    "salary": gen_salary,
+    "blood_type": lambda _r: gen_blood_type(),
+    "marital_status": lambda _r: gen_marital_status(),
+    "dialect_sentence": gen_dialect_sentence,
 }
 
 AVAILABLE_FIELDS: list[str] = sorted(FIELD_GENERATORS.keys())

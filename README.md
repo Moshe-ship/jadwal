@@ -41,7 +41,7 @@ jadwal fields
 
 ## Available Fields
 
-16+ fields, all region-aware:
+26 fields, all region-aware:
 
 | Field | Example (Gulf) |
 |-------|---------------|
