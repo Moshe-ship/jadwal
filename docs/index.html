@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>jadwal — Arabic Synthetic Data Generator</title>
+<meta name="description" content="Generate culturally accurate Arabic test data. Names, addresses, phones, IDs — all region-specific.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&family=Space+Mono:wght@400;700&family=Noto+Kufi+Arabic:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07080c;--glass:rgba(255,255,255,.03);--glass-border:rgba(255,255,255,.08);--glass-border-h:rgba(255,255,255,.15);
+  --fg:#e2e8f0;--fg2:#94a3b8;--fg3:#475569;
+  --gold:#f59e0b;--amber:#d97706;--honey:#fbbf24;--orange:#f97316;--red:#ef4444;--green:#22c55e;--cyan:#06b6d4;
+  --font:'DM Sans',system-ui,sans-serif;--mono:'Space Mono',monospace;
+  --max:1000px;--radius:14px;
+}
+html{scroll-behavior:smooth;background:var(--bg)}
+body{font-family:var(--font);color:var(--fg);background:var(--bg);line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:var(--gold);text-decoration:none}a:hover{text-decoration:underline}
+::selection{background:var(--gold);color:#000}
+code{font-family:var(--mono);font-size:.85em;background:rgba(255,255,255,.06);padding:.15em .4em;border-radius:4px}
+
+.bg-mesh{position:fixed;inset:0;z-index:-2;overflow:hidden}
+.bg-mesh .orb{position:absolute;border-radius:50%;filter:blur(130px);opacity:.1;will-change:transform}
+.orb-1{width:600px;height:600px;background:var(--gold);top:-15%;left:10%;animation:d1 22s ease-in-out infinite}
+.orb-2{width:500px;height:500px;background:var(--amber);bottom:0;right:-10%;animation:d2 26s ease-in-out infinite}
+.orb-3{width:400px;height:400px;background:var(--orange);top:50%;left:-10%;animation:d1 18s ease-in-out infinite reverse}
+@keyframes d1{0%,100%{transform:translate(0,0)}50%{transform:translate(60px,30px)}}
+@keyframes d2{0%,100%{transform:translate(0,0)}50%{transform:translate(-50px,50px)}}
+
+.bg-grid{position:fixed;inset:0;z-index:-1;background-image:radial-gradient(rgba(255,255,255,.03) 1px,transparent 1px);background-size:30px 30px;mask-image:radial-gradient(ellipse 60% 60% at 50% 50%,black,transparent)}
+
+.glass{background:var(--glass);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--glass-border);border-radius:var(--radius);transition:border-color .3s,box-shadow .3s}
+.glass:hover{border-color:var(--glass-border-h)}
+
+nav{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:100;width:min(calc(100% - 2rem),var(--max));padding:.55rem 1.1rem;display:flex;justify-content:space-between;align-items:center}
+nav .logo{font-family:var(--mono);font-weight:700;font-size:.9rem;color:#fff}
+nav .logo .v{font-size:.65rem;color:var(--fg3);font-weight:400;margin-left:.2rem}
+.nav-links{display:flex;gap:1rem;align-items:center;font-size:.78rem}
+.nav-links a{color:var(--fg2)}
+.nav-links a:hover{color:#fff;text-decoration:none}
+.gh-pill{display:inline-flex;align-items:center;gap:.3rem;padding:.25rem .6rem;border:1px solid var(--glass-border);border-radius:20px;font-size:.72rem;color:var(--fg);font-family:var(--mono);transition:all .2s}
+.gh-pill:hover{border-color:var(--gold);color:var(--gold);text-decoration:none}
+.gh-pill svg{width:13px;height:13px;fill:currentColor}
+
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:7rem 1.5rem 5rem}
+.hero-badge{display:inline-flex;align-items:center;gap:.4rem;padding:.3rem .8rem;border-radius:20px;font-size:.65rem;font-weight:500;color:var(--gold);letter-spacing:.04em;margin-bottom:1.5rem}
+.hero-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--gold);animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+h1{font-size:clamp(3.5rem,11vw,7rem);font-weight:700;line-height:.9;letter-spacing:-.05em;color:#fff}
+h1 .ar{font-family:'Noto Kufi Arabic',system-ui,sans-serif;font-size:.45em;color:var(--gold);display:block;margin-top:.3rem;letter-spacing:0}
+.hero-sub{font-size:clamp(.88rem,2vw,1.05rem);color:var(--fg2);max-width:520px;margin:1.5rem auto 0;font-weight:300;line-height:1.7;padding:0 .5rem}
+.hero-sub strong{color:#fff;font-weight:500}
+
+.stat-pill{display:inline-flex;align-items:center;gap:.8rem;margin:2rem 0;padding:.8rem 1.8rem;position:relative;overflow:hidden}
+.stat-pill::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(217,119,6,.08));z-index:0}
+.stat-pill .stat{font-family:var(--mono);font-size:.78rem;color:var(--gold);z-index:1;position:relative}
+.stat-pill .sep{color:var(--fg3);z-index:1;position:relative}
+
+.install-wrap{margin-top:1.5rem;display:flex;align-items:center;gap:.5rem;padding:.2rem .2rem .2rem .9rem;max-width:440px;font-family:var(--mono);font-size:.8rem}
+.install-wrap .pr{color:var(--fg3);user-select:none}
+.install-wrap code{flex:1;color:var(--gold);background:none;padding:0}
+.install-btn{background:var(--gold);color:#000;border:none;padding:.55rem 1rem;border-radius:calc(var(--radius) - 4px);cursor:pointer;font-family:var(--mono);font-size:.72rem;font-weight:700;transition:all .2s;white-space:nowrap}
+.install-btn:hover{filter:brightness(1.15)}
+.install-btn.copied{background:var(--green)}
+
+.section{max-width:var(--max);margin:0 auto;padding:5rem 1.5rem}
+.s-label{font-family:var(--mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.2em;color:var(--gold);margin-bottom:.6rem}
+.s-title{font-size:clamp(1.5rem,3.5vw,2rem);font-weight:700;color:#fff;letter-spacing:-.03em;margin-bottom:.4rem}
+.s-desc{color:var(--fg2);max-width:520px;font-size:.85rem;margin-bottom:2rem;font-weight:300;word-wrap:break-word}
+
+/* PROBLEM */
+.problem-box{padding:2rem;position:relative;overflow:hidden}
+.problem-box::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(245,158,11,.04),rgba(217,119,6,.02));z-index:0}
+.problem-box p{position:relative;z-index:1;font-size:.9rem;color:var(--fg2);line-height:1.8}
+.problem-box strong{color:#fff;font-weight:500}
+.problem-box .bad{font-family:var(--mono);color:var(--red);font-weight:700}
+.problem-box .good{font-family:var(--mono);color:var(--green);font-weight:700}
+
+/* REGION CARDS */
+.region-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.6rem}
+.region-card{padding:1.2rem;cursor:default}
+.region-card .flag{font-size:1.4rem;margin-bottom:.5rem}
+.region-card h3{font-family:var(--mono);font-size:.82rem;color:var(--gold);margin-bottom:.2rem;font-weight:700}
+.region-card .countries{font-family:var(--mono);font-size:.6rem;color:var(--fg3);margin-bottom:.6rem;letter-spacing:.05em}
+.region-card .example{font-size:.78rem;color:var(--fg2);line-height:1.7;direction:rtl;text-align:right}
+.region-card .example span{display:block}
+
+/* FIELD LIST */
+.field-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.5rem}
+.field-tag{padding:.6rem .9rem;font-family:var(--mono);font-size:.72rem;color:var(--fg2);cursor:default;text-align:center}
+.field-tag:hover{color:var(--gold)}
+
+/* COMMANDS */
+.cmd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.6rem}
+.cmd{padding:1rem 1.2rem;cursor:default}
+.cmd h3{font-family:var(--mono);font-size:.78rem;color:var(--gold);margin-bottom:.3rem;font-weight:700}
+.cmd p{font-size:.7rem;color:var(--fg2);line-height:1.5}
+
+/* FORMAT CARDS */
+.format-row{display:flex;gap:.6rem;flex-wrap:wrap}
+.format-card{flex:1;min-width:140px;padding:1rem;text-align:center;cursor:default}
+.format-card h3{font-family:var(--mono);font-size:.85rem;color:var(--honey);margin-bottom:.3rem;font-weight:700}
+.format-card p{font-size:.68rem;color:var(--fg2)}
+
+/* TERMINAL */
+.term{max-width:620px;overflow:hidden}
+.term-bar{display:flex;gap:5px;padding:10px 14px;background:rgba(255,255,255,.02);border-bottom:1px solid rgba(255,255,255,.04)}
+.term-bar i{width:9px;height:9px;border-radius:50%;display:block}
+.term-bar .r{background:var(--red)}.term-bar .y{background:var(--gold)}.term-bar .g{background:var(--green)}
+.term-body{padding:1.2rem;font-family:var(--mono);font-size:.73rem;line-height:2}
+.term-body .p{color:var(--green);user-select:none}
+.term-body .c{color:#fff}
+.term-body .cm{color:var(--fg3)}
+.term-body .out{color:var(--gold)}
+
+/* OFFLINE */
+.offline-box{display:flex;align-items:center;gap:1.5rem;padding:1.5rem;flex-wrap:wrap}
+.offline-box .big{font-size:2rem}
+.offline-box p{font-size:.82rem;color:var(--fg2);line-height:1.6;flex:1;min-width:200px}
+.offline-box p strong{color:#fff;font-weight:500}
+
+footer{text-align:center;padding:3rem 1.5rem;font-size:.7rem;color:var(--fg3)}
+footer a{color:var(--fg2)}
+.tool-series{max-width:var(--max);margin:0 auto;padding:0 1.5rem 1rem;text-align:center;font-family:var(--mono);font-size:.6rem;color:var(--fg3);word-spacing:.3em}
+.tool-series a{color:var(--fg3)}
+.tool-series a:hover{color:var(--gold)}
+.tool-series a.current{color:var(--gold);font-weight:700}
+
+[data-a]{opacity:0;transform:translateY(20px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1)}
+[data-a].v{opacity:1;transform:none}
+.hero h1{animation:hi .9s cubic-bezier(.16,1,.3,1) both}
+.hero-sub{animation:hi .9s cubic-bezier(.16,1,.3,1) .1s both}
+.stat-pill{animation:hi .9s cubic-bezier(.16,1,.3,1) .2s both}
+.install-wrap{animation:hi .9s cubic-bezier(.16,1,.3,1) .3s both}
+@keyframes hi{from{opacity:0;transform:translateY(25px) scale(.98)}to{opacity:1;transform:none}}
+
+/* === TABLET (max 768px) === */
+@media(max-width:768px){
+  .section{padding:3.5rem 1rem}
+  .hero{padding:5.5rem 1rem 3rem;min-height:auto}
+  .cmd-grid{grid-template-columns:1fr 1fr}
+  .region-grid{grid-template-columns:1fr 1fr}
+  h1{font-size:clamp(2.8rem,9vw,7rem)}
+  .s-title{font-size:1.4rem}
+}
+
+/* === MOBILE (max 600px) === */
+@media(max-width:600px){
+  .nav-links a:not(.gh-pill){display:none}
+  nav{width:calc(100% - 1rem);top:8px;padding:.4rem .7rem}
+  .hero{padding:4.5rem .75rem 2rem}
+  h1{font-size:clamp(2.2rem,8vw,3.5rem)}
+  h1 .ar{font-size:.5em}
+  .hero-sub{font-size:.88rem;padding:0 .25rem}
+  .section{padding:2.5rem .75rem}
+  .s-title{font-size:1.25rem}
+  .s-desc{font-size:.8rem}
+
+  .install-wrap{flex-wrap:wrap;padding:.5rem;gap:.4rem;justify-content:center;max-width:100%}
+  .install-wrap .pr{display:none}
+  .install-wrap code{flex:none;font-size:.72rem;word-break:break-all}
+  .install-btn{width:100%}
+
+  .stat-pill{flex-wrap:wrap;justify-content:center;gap:.4rem;padding:.8rem 1rem}
+  .stat-pill .sep{display:none}
+  .stat-pill .stat{font-size:.7rem}
+
+  .problem-box{padding:1.2rem}
+  .problem-box p{font-size:.82rem}
+
+  .region-grid{grid-template-columns:1fr}
+  .region-card{padding:.8rem 1rem}
+
+  .field-grid{grid-template-columns:1fr 1fr}
+
+  .cmd-grid{grid-template-columns:1fr}
+  .cmd{padding:.8rem 1rem}
+  .cmd h3{font-size:.72rem}
+  .cmd p{font-size:.65rem}
+
+  .format-row{flex-direction:column}
+  .format-card{padding:.8rem}
+
+  .offline-box{flex-direction:column;text-align:center;gap:.8rem;padding:1.2rem}
+  .offline-box p{font-size:.78rem}
+
+  .term{max-width:100%;border-radius:10px}
+  .term-body{font-size:.62rem;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:pre;padding:.8rem}
+
+  footer{padding:2rem .75rem}
+  footer p{font-size:.65rem}
+  .tool-series{font-size:.52rem;padding:0 .75rem .8rem}
+}
+
+/* === SMALL MOBILE (max 380px) === */
+@media(max-width:380px){
+  h1{font-size:2rem}
+  h1 .ar{font-size:.55em}
+  .hero{padding:4rem .5rem 1.5rem}
+  .section{padding:2rem .5rem}
+  nav{padding:.35rem .5rem}
+  .gh-pill{font-size:.6rem;padding:.2rem .4rem}
+  .hero-badge{font-size:.58rem;padding:.25rem .6rem}
+  .hero-sub{font-size:.82rem}
+  .field-grid{grid-template-columns:1fr}
+  .tool-series{font-size:.48rem;word-spacing:.15em}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-mesh"><div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div></div>
+<div class="bg-grid"></div>
+
+<nav class="glass">
+  <div class="logo">jadwal<span class="v">v0.1</span></div>
+  <div class="nav-links">
+    <a href="#regions">Regions</a>
+    <a href="#fields">Fields</a>
+    <a href="#commands">Commands</a>
+    <a href="kindle.html" class="gh-pill" style="border-color:var(--amber);color:var(--amber)"><svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:currentColor"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>Kindle</a>
+    <a href="https://github.com/Moshe-ship/jadwal" class="gh-pill">
+      <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-badge glass">Data Generation Tool</div>
+  <h1>jadwal<span class="ar">جدول</span></h1>
+  <p class="hero-sub">Generate culturally accurate <strong>Arabic test data</strong>. Names, addresses, phones, IDs — all <strong>region-specific</strong>.</p>
+  <div class="stat-pill glass">
+    <span class="stat">16+ fields</span>
+    <span class="sep">&middot;</span>
+    <span class="stat">4 regions</span>
+    <span class="sep">&middot;</span>
+    <span class="stat">3 formats</span>
+  </div>
+  <div class="install-wrap glass">
+    <span class="pr">$</span>
+    <code>pip install jadwal</code>
+    <button class="install-btn" onclick="doCopy(this)">Copy</button>
+  </div>
+</section>
+
+<section class="section" id="problem">
+  <div class="s-label">The Problem</div>
+  <div class="s-title">Your test data says John Smith.</div>
+  <div class="problem-box glass" data-a>
+    <p>Every Arabic app needs test data. Random generators give you <span class="bad">"John Smith"</span> with a <span class="bad">555-0123</span> phone number and a <span class="bad">123 Main St</span> address. That is useless for Arabic software. jadwal gives you <span class="good">"محمد بن عبدالله القحطاني"</span> with a real <strong>Saudi phone number</strong>, a <strong>Riyadh address</strong>, and a valid <strong>national ID format</strong>. Region-specific patterns for <strong>Gulf, Egypt, Levant, and Maghreb</strong>. Offline. No API.</p>
+  </div>
+</section>
+
+<section class="section" id="regions">
+  <div class="s-label">Regions</div>
+  <div class="s-title">Four regions. Real patterns.</div>
+  <div class="s-desc">Each region generates data matching local name conventions, phone formats, ID patterns, and address structures.</div>
+  <div class="region-grid">
+    <div class="region-card glass" data-a>
+      <div class="flag">&#x1F1F8;&#x1F1E6;</div>
+      <h3>Gulf</h3>
+      <div class="countries">SA &middot; UAE &middot; QA &middot; BH &middot; KW &middot; OM</div>
+      <div class="example">
+        <span>محمد بن عبدالله القحطاني</span>
+        <span style="direction:ltr;text-align:left;font-family:var(--mono);font-size:.7rem;color:var(--fg3);margin-top:.3rem">+966 55 123 4567</span>
+      </div>
+    </div>
+    <div class="region-card glass" data-a>
+      <div class="flag">&#x1F1EA;&#x1F1EC;</div>
+      <h3>Egypt</h3>
+      <div class="countries">EG</div>
+      <div class="example">
+        <span>أحمد محمود عبدالرحمن</span>
+        <span style="direction:ltr;text-align:left;font-family:var(--mono);font-size:.7rem;color:var(--fg3);margin-top:.3rem">+20 10 1234 5678</span>
+      </div>
+    </div>
+    <div class="region-card glass" data-a>
+      <div class="flag">&#x1F1EF;&#x1F1F4;</div>
+      <h3>Levant</h3>
+      <div class="countries">JO &middot; LB &middot; SY &middot; PS</div>
+      <div class="example">
+        <span>عمر خالد الحسيني</span>
+        <span style="direction:ltr;text-align:left;font-family:var(--mono);font-size:.7rem;color:var(--fg3);margin-top:.3rem">+962 79 123 4567</span>
+      </div>
+    </div>
+    <div class="region-card glass" data-a>
+      <div class="flag">&#x1F1F2;&#x1F1E6;</div>
+      <h3>Maghreb</h3>
+      <div class="countries">MA &middot; TN &middot; DZ &middot; LY</div>
+      <div class="example">
+        <span>يوسف بن عيسى البكري</span>
+        <span style="direction:ltr;text-align:left;font-family:var(--mono);font-size:.7rem;color:var(--fg3);margin-top:.3rem">+212 661 234567</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="fields">
+  <div class="s-label">Available Fields</div>
+  <div class="s-title">16+ fields. All region-aware.</div>
+  <div class="s-desc">Every field adapts to the selected region — names, formats, patterns all match local conventions.</div>
+  <div class="field-grid">
+    <div class="field-tag glass" data-a>full_name</div>
+    <div class="field-tag glass" data-a>first_name</div>
+    <div class="field-tag glass" data-a>family_name</div>
+    <div class="field-tag glass" data-a>email</div>
+    <div class="field-tag glass" data-a>phone</div>
+    <div class="field-tag glass" data-a>national_id</div>
+    <div class="field-tag glass" data-a>city</div>
+    <div class="field-tag glass" data-a>address</div>
+    <div class="field-tag glass" data-a>company</div>
+    <div class="field-tag glass" data-a>job_title</div>
+    <div class="field-tag glass" data-a>date_hijri</div>
+    <div class="field-tag glass" data-a>date_gregorian</div>
+    <div class="field-tag glass" data-a>paragraph</div>
+    <div class="field-tag glass" data-a>sentence</div>
+    <div class="field-tag glass" data-a>age</div>
+    <div class="field-tag glass" data-a>gender</div>
+  </div>
+</section>
+
+<section class="section" id="commands">
+  <div class="s-label">Commands</div>
+  <div class="s-title">5 commands. Zero config.</div>
+  <div class="cmd-grid">
+    <div class="cmd glass" data-a><h3>generate</h3><p>Generate synthetic records to file. Supports count, region, output format.</p></div>
+    <div class="cmd glass" data-a><h3>sample</h3><p>Preview a single record in the terminal. Quick way to see the output.</p></div>
+    <div class="cmd glass" data-a><h3>fields</h3><p>List all available fields with descriptions and examples per region.</p></div>
+    <div class="cmd glass" data-a><h3>regions</h3><p>Show supported regions with countries, phone formats, and ID patterns.</p></div>
+    <div class="cmd glass" data-a><h3>explain</h3><p>Learn how jadwal generates data — patterns, sources, methodology.</p></div>
+  </div>
+</section>
+
+<section class="section" id="formats">
+  <div class="s-label">Output</div>
+  <div class="s-title">Three formats. Your choice.</div>
+  <div class="format-row">
+    <div class="format-card glass" data-a><h3>JSONL</h3><p>One JSON object per line. Streaming-friendly. Default.</p></div>
+    <div class="format-card glass" data-a><h3>CSV</h3><p>Standard CSV with headers. Spreadsheet-ready.</p></div>
+    <div class="format-card glass" data-a><h3>JSON</h3><p>Single JSON array. Full dataset in one file.</p></div>
+  </div>
+</section>
+
+<section class="section" id="start">
+  <div class="s-label">Get Started</div>
+  <div class="s-title">Arabic test data in seconds.</div>
+  <div class="term glass" data-a>
+    <div class="term-bar"><i class="r"></i><i class="y"></i><i class="g"></i></div>
+    <div class="term-body">
+<span class="cm"># Install</span>
+<span class="p">$ </span><span class="c">pip install jadwal</span>
+
+<span class="cm"># Generate 100 Gulf records</span>
+<span class="p">$ </span><span class="c">jadwal generate --count 100 --region gulf --output data.jsonl</span>
+<span class="out">Generated 100 records to data.jsonl</span>
+
+<span class="cm"># Preview an Egyptian sample</span>
+<span class="p">$ </span><span class="c">jadwal sample --region egypt</span>
+<span class="out">{</span>
+<span class="out">  "full_name": "أحمد محمود عبدالرحمن",</span>
+<span class="out">  "phone": "+20 10 1234 5678",</span>
+<span class="out">  "city": "القاهرة",</span>
+<span class="out">  "national_id": "29001011234567"</span>
+<span class="out">}</span>
+
+<span class="cm"># List available fields</span>
+<span class="p">$ </span><span class="c">jadwal fields</span>
+
+<span class="cm"># Export as CSV</span>
+<span class="p">$ </span><span class="c">jadwal generate --count 50 --region levant --format csv --output levant.csv</span>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="offline">
+  <div class="s-label">Fully Offline</div>
+  <div class="s-title">No API. No internet.</div>
+  <div class="offline-box glass" data-a>
+    <div class="big">&#x1F512;</div>
+    <p>All data patterns are <strong>built-in</strong>. No network calls. No external APIs. No telemetry. Runs anywhere Python runs — air-gapped environments, CI pipelines, local dev.</p>
+  </div>
+</section>
+
+<footer>
+  <p style="font-size:.8rem;color:var(--fg2);margin-bottom:.6rem" dir="rtl">مقدمة من <a href="https://x.com/i/communities/2032184341682643429" style="color:var(--gold)">مجتمع الذكاء الاصطناعي السعودي</a> للعرب أولا وللعالم أجمع</p>
+  <p style="font-size:.72rem;color:var(--fg3);margin-bottom:.8rem">Brought to you by the <a href="https://x.com/i/communities/2032184341682643429">Saudi AI Community</a> — for Arabs first, and the world at large.</p>
+  <p>MIT License &middot; <a href="https://github.com/Moshe-ship">Musa the Carpenter</a> &middot; <a href="https://github.com/Moshe-ship/jadwal">GitHub</a></p>
+</footer>
+
+<div class="tool-series">
+  <a href="https://github.com/Moshe-ship/artok">artok</a> &middot;
+  <a href="https://github.com/Moshe-ship/bidi-guard">bidi-guard</a> &middot;
+  <a href="https://github.com/Moshe-ship/arabench">arabench</a> &middot;
+  <a href="https://github.com/Moshe-ship/majal">majal</a> &middot;
+  <a href="https://github.com/Moshe-ship/khalas">khalas</a> &middot;
+  <a href="https://github.com/Moshe-ship/safha">safha</a> &middot;
+  <a href="https://github.com/Moshe-ship/raqeeb">raqeeb</a> &middot;
+  <a href="https://github.com/Moshe-ship/sarih">sarih</a> &middot;
+  <a href="https://github.com/Moshe-ship/qalam">qalam</a> &middot;
+  <a href="https://github.com/Moshe-ship/naql">naql</a> &middot;
+  <a href="https://github.com/Moshe-ship/samt">samt</a> &middot;
+  <a href="https://github.com/Moshe-ship/jadwal" class="current">jadwal</a>
+</div>
+
+<script>
+function doCopy(b){navigator.clipboard.writeText('pip install jadwal');b.textContent='Copied!';b.classList.add('copied');setTimeout(()=>{b.textContent='Copy';b.classList.remove('copied')},1500)}
+const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('v');io.unobserve(e.target)}})},{threshold:.08,rootMargin:'0px 0px -30px 0px'});
+document.querySelectorAll('[data-a]').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>

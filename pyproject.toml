@@ -1,0 +1,30 @@
+[project]
+name = "jadwal"
+version = "0.1.0"
+description = "Arabic Synthetic Data Generator — realistic names, addresses, phones across dialect regions"
+requires-python = ">=3.9"
+license = "MIT"
+authors = [{ name = "Musa the Carpenter" }]
+readme = "README.md"
+keywords = ["arabic", "synthetic-data", "faker", "testing", "data-generation"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Utilities",
+]
+dependencies = [
+    "rich>=13.0.0",
+]
+
+[project.scripts]
+jadwal = "jadwal.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"

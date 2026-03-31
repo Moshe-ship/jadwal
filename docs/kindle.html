@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>jadwal — Arabic Synthetic Data Generator</title>
+<meta name="description" content="Generate culturally accurate Arabic test data. Names, addresses, phones, IDs — all region-specific.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,300;0,7..72,400;0,7..72,500;0,7..72,700;1,7..72,300;1,7..72,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --paper:#f7f3eb;--paper2:#efe9dd;--paper3:#e6dfd0;
+  --ink:#2c2416;--ink2:#5c5244;--ink3:#8a7f6f;--ink4:#b5ac9a;
+  --accent:#92400e;--gold:#92400e;--green:#2d6a4f;--red:#9b2335;--amber:#b45309;
+  --highlight:rgba(146,64,14,.06);
+  --font:'Literata',Georgia,serif;--mono:'JetBrains Mono',monospace;
+  --max:740px;--radius:3px;
+}
+html{scroll-behavior:smooth;background:var(--paper)}
+body{font-family:var(--font);color:var(--ink);background:var(--paper);line-height:1.75;overflow-x:hidden;-webkit-font-smoothing:antialiased;font-size:16px}
+a{color:var(--accent);text-decoration:underline;text-decoration-color:var(--ink4);text-underline-offset:3px}
+a:hover{text-decoration-color:var(--accent)}
+::selection{background:rgba(146,64,14,.15);color:var(--ink)}
+code{font-family:var(--mono);font-size:.82em;background:var(--paper2);padding:.15em .35em;border-radius:2px;color:var(--accent)}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.025;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.page-wrap{max-width:calc(var(--max) + 6rem);margin:0 auto;position:relative;min-height:100vh}
+.page-wrap::before,.page-wrap::after{content:'';position:fixed;top:0;bottom:0;width:1px;background:var(--paper3)}
+.page-wrap::before{left:calc(50% - var(--max)/2 - 2.5rem)}
+.page-wrap::after{right:calc(50% - var(--max)/2 - 2.5rem)}
+@media(max-width:900px){.page-wrap::before,.page-wrap::after{display:none}}
+
+nav{max-width:var(--max);margin:0 auto;padding:1.5rem 1.5rem 0;display:flex;justify-content:space-between;align-items:baseline;font-size:.82rem}
+nav .logo{font-family:var(--mono);font-weight:700;color:var(--ink);letter-spacing:-.02em}
+nav .logo .v{color:var(--ink3);font-weight:400;font-size:.75em}
+.nav-r{display:flex;gap:.8rem;align-items:baseline}
+.nav-r a{color:var(--ink3);text-decoration:none;font-size:.75rem}
+.nav-r a:hover{color:var(--ink)}
+.gh-link,.theme-toggle{font-family:var(--mono);font-size:.7rem;padding:.2rem .5rem;border:1px solid var(--ink4);border-radius:2px;color:var(--ink2);text-decoration:none;transition:all .2s;display:inline-flex;align-items:center;gap:.25rem}
+.gh-link:hover{border-color:var(--accent);color:var(--accent)}
+.theme-toggle:hover{border-color:var(--ink);color:var(--ink)}
+.theme-toggle svg{width:12px;height:12px;fill:currentColor}
+
+hr{border:none;border-top:1px solid var(--paper3);margin:2rem 0}
+.thick-hr{border-top:2px solid var(--ink);margin:1.5rem 0}
+
+.hero{max-width:var(--max);margin:0 auto;padding:3.5rem 1.5rem 1.5rem;text-align:center}
+h1{font-size:clamp(2.5rem,7vw,3.5rem);font-weight:700;line-height:.95;letter-spacing:-.03em;color:var(--ink)}
+h1 .ar{display:block;font-size:.5em;color:var(--accent);margin-top:.3rem;letter-spacing:0}
+.hero-sub{font-size:1rem;color:var(--ink2);max-width:480px;margin:1.2rem auto 0;font-weight:300;font-style:italic;line-height:1.7;word-wrap:break-word;padding:0 .5rem}
+.hero-sub strong{color:var(--ink);font-weight:500;font-style:normal}
+
+.stat-box{max-width:var(--max);margin:0 auto;padding:0 1.5rem}
+.stat-inner{background:var(--highlight);border-left:3px solid var(--accent);padding:1rem 1.2rem;font-size:.9rem;line-height:1.6}
+.stat-inner .num{font-family:var(--mono);font-weight:700;color:var(--gold)}
+
+.install-box{max-width:var(--max);margin:1.2rem auto 0;padding:0 1.5rem}
+.install-inner{display:flex;align-items:center;gap:.5rem;background:var(--ink);color:var(--paper);padding:.45rem .45rem .45rem .9rem;border-radius:var(--radius);font-family:var(--mono);font-size:.8rem}
+.install-inner .pr{color:var(--ink4);user-select:none}
+.install-inner code{flex:1;background:none;color:#d4a574;padding:0;font-size:.8rem}
+.install-inner button{background:var(--accent);color:var(--paper);border:none;padding:.4rem .8rem;border-radius:2px;cursor:pointer;font-family:var(--mono);font-size:.7rem;font-weight:700;transition:all .2s}
+.install-inner button:hover{opacity:.85}
+.install-inner button.copied{background:var(--green)}
+
+.section{max-width:var(--max);margin:0 auto;padding:2.5rem 1.5rem}
+.ch-num{font-family:var(--mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.2em;color:var(--ink4);margin-bottom:.3rem}
+.ch-title{font-size:1.4rem;font-weight:700;color:var(--ink);letter-spacing:-.02em;margin-bottom:.3rem}
+.ch-desc{color:var(--ink2);font-size:.88rem;margin-bottom:1.5rem;font-style:italic;word-wrap:break-word}
+
+/* REGION LIST */
+.region-group{margin-bottom:1.5rem}
+.region-group h3{font-family:var(--mono);font-size:.82rem;color:var(--accent);font-weight:700;margin-bottom:.4rem}
+.region-group .countries{font-family:var(--mono);font-size:.7rem;color:var(--ink3);margin-bottom:.4rem}
+.region-group .example{font-size:.82rem;color:var(--ink2);line-height:1.6;padding:.4rem 0;border-bottom:1px solid var(--paper3)}
+.region-group .example:last-child{border:none}
+.region-group .example .label{font-family:var(--mono);font-size:.7rem;color:var(--ink4);min-width:80px;display:inline-block}
+
+/* FIELD LIST */
+.field-list{list-style:none;columns:2;column-gap:1.5rem}
+.field-list li{break-inside:avoid;padding:.35rem 0;border-bottom:1px solid var(--paper3);font-size:.82rem;line-height:1.5}
+.field-list .name{font-family:var(--mono);font-size:.78rem;color:var(--accent);font-weight:500}
+
+/* COMMANDS */
+.cmd-list{list-style:none;columns:2;column-gap:1.5rem}
+.cmd-list li{break-inside:avoid;padding:.5rem 0;border-bottom:1px solid var(--paper3);font-size:.85rem;line-height:1.5}
+.cmd-list .flag{font-family:var(--mono);font-size:.78rem;color:var(--accent);font-weight:500}
+.cmd-list .desc{color:var(--ink2);font-size:.78rem}
+
+/* FORMAT TABLE */
+.format-table{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:.5rem}
+.format-table th{font-family:var(--mono);text-align:left;padding:.4rem .6rem;color:var(--ink3);font-weight:400;font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;border-bottom:2px solid var(--ink)}
+.format-table td{padding:.4rem .6rem;border-bottom:1px solid var(--paper3)}
+.format-table tr:last-child td{border:none}
+.format-table tr:hover td{background:var(--highlight)}
+.format-table .fmt{font-family:var(--mono);color:var(--accent);font-weight:500}
+
+/* TERMINAL */
+.term{background:var(--ink);border-radius:var(--radius);overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.term-bar{display:flex;gap:5px;padding:8px 12px;background:rgba(0,0,0,.2)}
+.term-bar i{width:8px;height:8px;border-radius:50%;display:block}
+.term-bar .r{background:#e06c75}.term-bar .y{background:#e5c07b}.term-bar .g{background:#98c379}
+.term-body{padding:1rem;font-family:var(--mono);font-size:.72rem;line-height:2;color:#abb2bf;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:pre;word-break:normal}
+.term-body .p{color:#98c379;user-select:none}
+.term-body .c{color:#e5c07b}
+.term-body .cm{color:#5c6370}
+.term-body .out{color:#d4a574}
+
+footer{max-width:var(--max);margin:0 auto;text-align:center;padding:2rem 1.5rem 1rem;font-size:.75rem;color:var(--ink3)}
+footer a{color:var(--ink2)}
+.tool-series{max-width:var(--max);margin:0 auto;text-align:center;padding:0 1.5rem 3rem;font-family:var(--mono);font-size:.6rem;color:var(--ink3);word-spacing:.3em}
+.tool-series a{color:var(--ink3)}
+.tool-series a:hover{color:var(--accent)}
+.tool-series a.current{color:var(--accent);font-weight:700}
+
+[data-a]{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s ease}
+[data-a].v{opacity:1;transform:none}
+
+/* === TABLET (max 768px) === */
+@media(max-width:768px){
+  .section{padding:2rem 1.2rem}
+  .hero{padding:2.8rem 1.2rem 1.2rem}
+  h1{font-size:clamp(2.2rem,7vw,3.5rem)}
+  .ch-title{font-size:1.25rem}
+  .cmd-list{columns:1}
+  .field-list{columns:1}
+}
+
+/* === MOBILE (max 600px) === */
+@media(max-width:600px){
+  .section{padding:1.8rem 1rem}
+  .hero{padding:2.5rem 1rem 1rem}
+  h1{font-size:clamp(2rem,7vw,3.5rem)}
+  .hero-sub{font-size:.88rem;padding:0 .25rem}
+  .cmd-list{columns:1}
+  .field-list{columns:1}
+  .install-box{padding:0 1rem}
+  .install-inner{flex-wrap:wrap;gap:.3rem;padding:.4rem}
+  .install-inner .pr{display:none}
+  .install-inner code{flex:none;font-size:.72rem;word-break:break-all}
+  .install-inner button{width:100%}
+  .stat-box{padding:0 1rem}
+  .stat-inner{font-size:.82rem;padding:.8rem}
+  .term{border-radius:0}
+  .term-body{font-size:.62rem;padding:.8rem}
+  .format-table{font-size:.75rem}
+  .format-table th,.format-table td{padding:.35rem .45rem}
+  nav{padding:1rem 1rem 0;flex-wrap:wrap;gap:.4rem}
+  .nav-r{gap:.5rem}
+  .ch-title{font-size:1.2rem}
+  .ch-desc{font-size:.82rem}
+  footer{padding:1.5rem 1rem .8rem}
+  footer p{font-size:.68rem!important}
+  .tool-series{font-size:.52rem;padding:0 1rem 2rem}
+}
+
+/* === SMALL MOBILE (max 380px) === */
+@media(max-width:380px){
+  .hero{padding:2rem .5rem .8rem}
+  .section{padding:1.2rem .5rem}
+  h1{font-size:1.8rem}
+  .hero-sub{font-size:.82rem}
+  .nav-r a:not(.gh-link):not(.theme-toggle){display:none}
+  .stat-inner{font-size:.78rem;padding:.6rem .8rem}
+  .format-table{font-size:.7rem}
+  .region-group .example{font-size:.78rem}
+  .region-group .example .label{font-size:.65rem}
+  .field-list li{font-size:.78rem}
+  .field-list .name{font-size:.72rem}
+  .tool-series{font-size:.48rem;word-spacing:.15em}
+}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+<nav>
+  <div class="logo">jadwal <span class="v">v0.1</span></div>
+  <div class="nav-r">
+    <a href="#regions">Regions</a>
+    <a href="#fields">Fields</a>
+    <a href="#commands">Commands</a>
+    <a href="index.html" class="theme-toggle"><svg viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1z"/></svg>Dark</a>
+    <a href="https://github.com/Moshe-ship/jadwal" class="gh-link">GitHub</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <h1>jadwal<span class="ar">جدول</span></h1>
+  <p class="hero-sub">Generate culturally accurate <strong>Arabic test data</strong>. Names, addresses, phones, IDs — all <strong>region-specific</strong>.</p>
+</section>
+
+<div class="stat-box" data-a>
+  <div class="stat-inner">
+    <span class="num">16+</span> fields across <span class="num">4</span> regions. Output in JSONL, CSV, or JSON. <span class="num">Fully offline</span> — no APIs, no internet.
+  </div>
+</div>
+
+<div class="install-box" data-a>
+  <div class="install-inner">
+    <span class="pr">$</span>
+    <code>pip install jadwal</code>
+    <button onclick="doCopy(this)">Copy</button>
+  </div>
+</div>
+
+<div class="section"><hr class="thick-hr"></div>
+
+<section class="section" id="problem">
+  <div class="ch-num">Chapter I</div>
+  <div class="ch-title">The Problem</div>
+  <div class="ch-desc">Your test data says John Smith.</div>
+  <p style="font-size:.88rem;color:var(--ink2);line-height:1.8" data-a>Every Arabic app needs test data. Random generators give you "John Smith" with a 555-0123 phone number and a 123 Main St address. That is useless for Arabic software. jadwal gives you "محمد بن عبدالله القحطاني" with a real Saudi phone number, a Riyadh address, and a valid national ID format. Region-specific patterns for Gulf, Egypt, Levant, and Maghreb. Offline. No API.</p>
+</section>
+
+<div class="section"><hr></div>
+
+<section class="section" id="regions">
+  <div class="ch-num">Chapter II</div>
+  <div class="ch-title">Four Regions</div>
+  <div class="ch-desc">Each region generates data matching local conventions.</div>
+
+  <div class="region-group" data-a>
+    <h3>Gulf</h3>
+    <div class="countries">SA &middot; UAE &middot; QA &middot; BH &middot; KW &middot; OM</div>
+    <div class="example"><span class="label">Name</span> محمد بن عبدالله القحطاني</div>
+    <div class="example"><span class="label">Phone</span> +966 55 123 4567</div>
+    <div class="example"><span class="label">City</span> الرياض</div>
+  </div>
+
+  <div class="region-group" data-a>
+    <h3>Egypt</h3>
+    <div class="countries">EG</div>
+    <div class="example"><span class="label">Name</span> أحمد محمود عبدالرحمن</div>
+    <div class="example"><span class="label">Phone</span> +20 10 1234 5678</div>
+    <div class="example"><span class="label">City</span> القاهرة</div>
+  </div>
+
+  <div class="region-group" data-a>
+    <h3>Levant</h3>
+    <div class="countries">JO &middot; LB &middot; SY &middot; PS</div>
+    <div class="example"><span class="label">Name</span> عمر خالد الحسيني</div>
+    <div class="example"><span class="label">Phone</span> +962 79 123 4567</div>
+    <div class="example"><span class="label">City</span> عمّان</div>
+  </div>
+
+  <div class="region-group" data-a>
+    <h3>Maghreb</h3>
+    <div class="countries">MA &middot; TN &middot; DZ &middot; LY</div>
+    <div class="example"><span class="label">Name</span> يوسف بن عيسى البكري</div>
+    <div class="example"><span class="label">Phone</span> +212 661 234567</div>
+    <div class="example"><span class="label">City</span> الدار البيضاء</div>
+  </div>
+</section>
+
+<div class="section"><hr></div>
+
+<section class="section" id="fields">
+  <div class="ch-num">Chapter III</div>
+  <div class="ch-title">16+ Fields</div>
+  <div class="ch-desc">Every field adapts to the selected region.</div>
+  <ul class="field-list" data-a>
+    <li><span class="name">full_name</span></li>
+    <li><span class="name">first_name</span></li>
+    <li><span class="name">family_name</span></li>
+    <li><span class="name">email</span></li>
+    <li><span class="name">phone</span></li>
+    <li><span class="name">national_id</span></li>
+    <li><span class="name">city</span></li>
+    <li><span class="name">address</span></li>
+    <li><span class="name">company</span></li>
+    <li><span class="name">job_title</span></li>
+    <li><span class="name">date_hijri</span></li>
+    <li><span class="name">date_gregorian</span></li>
+    <li><span class="name">paragraph</span></li>
+    <li><span class="name">sentence</span></li>
+    <li><span class="name">age</span></li>
+    <li><span class="name">gender</span></li>
+  </ul>
+</section>
+
+<div class="section"><hr></div>
+
+<section class="section" id="formats">
+  <div class="ch-num">Chapter IV</div>
+  <div class="ch-title">Output Formats</div>
+  <div class="ch-desc">Three formats. Your choice.</div>
+  <div data-a>
+    <table class="format-table">
+      <thead><tr><th>Format</th><th>Description</th><th>Flag</th></tr></thead>
+      <tbody>
+        <tr><td class="fmt">JSONL</td><td>One JSON object per line. Streaming-friendly.</td><td><code>--format jsonl</code></td></tr>
+        <tr><td class="fmt">CSV</td><td>Standard CSV with headers. Spreadsheet-ready.</td><td><code>--format csv</code></td></tr>
+        <tr><td class="fmt">JSON</td><td>Single JSON array. Full dataset in one file.</td><td><code>--format json</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="section"><hr></div>
+
+<section class="section" id="commands">
+  <div class="ch-num">Chapter V</div>
+  <div class="ch-title">Commands</div>
+  <div class="ch-desc">5 commands. Zero config.</div>
+  <ul class="cmd-list" data-a>
+    <li><span class="flag">generate</span><br><span class="desc">Generate synthetic records to file. Supports count, region, output format.</span></li>
+    <li><span class="flag">sample</span><br><span class="desc">Preview a single record in the terminal.</span></li>
+    <li><span class="flag">fields</span><br><span class="desc">List all available fields with descriptions and examples.</span></li>
+    <li><span class="flag">regions</span><br><span class="desc">Show supported regions with countries and patterns.</span></li>
+    <li><span class="flag">explain</span><br><span class="desc">Learn how jadwal generates data.</span></li>
+  </ul>
+</section>
+
+<div class="section"><hr></div>
+
+<section class="section">
+  <div class="ch-num">Chapter VI</div>
+  <div class="ch-title">Get Started</div>
+  <div class="term" data-a>
+    <div class="term-bar"><i class="r"></i><i class="y"></i><i class="g"></i></div>
+    <div class="term-body">
+<span class="cm"># Install</span>
+<span class="p">$ </span><span class="c">pip install jadwal</span>
+
+<span class="cm"># Generate 100 Gulf records</span>
+<span class="p">$ </span><span class="c">jadwal generate --count 100 --region gulf --output data.jsonl</span>
+<span class="out">Generated 100 records to data.jsonl</span>
+
+<span class="cm"># Preview an Egyptian sample</span>
+<span class="p">$ </span><span class="c">jadwal sample --region egypt</span>
+<span class="out">{</span>
+<span class="out">  "full_name": "أحمد محمود عبدالرحمن",</span>
+<span class="out">  "phone": "+20 10 1234 5678",</span>
+<span class="out">  "city": "القاهرة"</span>
+<span class="out">}</span>
+
+<span class="cm"># List available fields</span>
+<span class="p">$ </span><span class="c">jadwal fields</span>
+
+<span class="cm"># Export as CSV</span>
+<span class="p">$ </span><span class="c">jadwal generate --count 50 --region levant --format csv --output levant.csv</span>
+    </div>
+  </div>
+</section>
+
+<div class="section"><hr class="thick-hr"></div>
+
+<footer>
+  <p style="font-size:.85rem;color:var(--ink2);margin-bottom:.5rem;line-height:1.5" dir="rtl">مقدمة من <a href="https://x.com/i/communities/2032184341682643429">مجتمع الذكاء الاصطناعي السعودي</a> للعرب أولا وللعالم أجمع</p>
+  <p style="font-size:.78rem;color:var(--ink3);margin-bottom:.7rem;font-style:italic">Brought to you by the <a href="https://x.com/i/communities/2032184341682643429" style="color:var(--ink2)">Saudi AI Community</a> — for Arabs first, and the world at large.</p>
+  <p>MIT License &middot; <a href="https://github.com/Moshe-ship">Musa the Carpenter</a> &middot; <a href="https://github.com/Moshe-ship/jadwal">GitHub</a></p>
+</footer>
+
+<div class="tool-series">
+  <a href="https://github.com/Moshe-ship/artok">artok</a> &middot;
+  <a href="https://github.com/Moshe-ship/bidi-guard">bidi-guard</a> &middot;
+  <a href="https://github.com/Moshe-ship/arabench">arabench</a> &middot;
+  <a href="https://github.com/Moshe-ship/majal">majal</a> &middot;
+  <a href="https://github.com/Moshe-ship/khalas">khalas</a> &middot;
+  <a href="https://github.com/Moshe-ship/safha">safha</a> &middot;
+  <a href="https://github.com/Moshe-ship/raqeeb">raqeeb</a> &middot;
+  <a href="https://github.com/Moshe-ship/sarih">sarih</a> &middot;
+  <a href="https://github.com/Moshe-ship/qalam">qalam</a> &middot;
+  <a href="https://github.com/Moshe-ship/naql">naql</a> &middot;
+  <a href="https://github.com/Moshe-ship/samt">samt</a> &middot;
+  <a href="https://github.com/Moshe-ship/jadwal" class="current">jadwal</a>
+</div>
+
+</div>
+
+<script>
+function doCopy(b){navigator.clipboard.writeText('pip install jadwal');b.textContent='Copied!';b.classList.add('copied');setTimeout(()=>{b.textContent='Copy';b.classList.remove('copied')},1500)}
+const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('v');io.unobserve(e.target)}})},{threshold:.08,rootMargin:'0px 0px -30px 0px'});
+document.querySelectorAll('[data-a]').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>
